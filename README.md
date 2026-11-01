@@ -1,68 +1,53 @@
-# 🔷🔶 Double Diamond Harness
+# double-diamond-harness
 
-> A human-in-the-loop process prompt for AI agents.
-> **The AI diverges. The human converges.**
+A single Markdown process prompt that makes an AI agent stop for human approval when the problem is defined and before a result is shipped.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Works with: any agent](https://img.shields.io/badge/works%20with-Claude%20Code%20%C2%B7%20Cursor%20%C2%B7%20any%20agent-8A2BE2)](#usage)
-[![Prompt: Markdown](https://img.shields.io/badge/prompt-plain%20markdown-lightgrey)](PROCESS.md)
-[![한국어](https://img.shields.io/badge/docs-%ED%95%9C%EA%B5%AD%EC%96%B4-orange)](PROCESS.ko.md)
+> **Status:** done · **Period:** 2026-07-13 (single release commit) · **Visibility:** public
+> **Outcome:** `PROCESS.md` (English) and `PROCESS.ko.md` (Korean original) released under MIT, with an example Claude Code project file.
+> **Next step:** none recorded in the repository.
 
-LLMs collapsed the cost of the *middle* of the problem-solving loop — generating
-ideas and building prototypes is now nearly free. What's left as the bottleneck
-is the two ends: **defining the right problem** and **judging whether it's actually
-solved**. Those are human jobs, and most agent setups have no structural place
-for them — the agent happily sprints, at 10× speed, toward the wrong problem.
+## What and why
 
-This repo is a single markdown prompt that fixes that. It puts the classic
-[Double Diamond](https://www.designcouncil.org.uk/our-resources/framework-for-innovation/)
-design framework (UK Design Council) into your agent harness, with **hard
-human gates at every convergence point**.
+LLMs made the middle of the problem-solving loop cheap: generating ideas and building prototypes now costs very little. The two ends are still the bottleneck: defining the right problem, and judging whether it is actually solved. Those are human jobs, and most agent setups give them no fixed place. The agent then works quickly toward the wrong problem.
 
-## The model
+This repository puts the [Double Diamond](https://www.designcouncil.org.uk/our-resources/framework-for-innovation/) design framework (UK Design Council) into an agent harness, with a hard human gate at each convergence point. It is for anyone who runs a coding or research agent on tasks where the problem statement is not fixed in advance: software features, papers, competition entries. For a paper the phases map onto background, problem setup, method and evaluation.
 
 ```mermaid
 flowchart LR
-    A["🔍 Discover<br/><i>explore the problem space</i><br/><b>AI autonomy: HIGH</b>"]
-    B{"◆ Define<br/><i>fix the problem statement</i><br/><b>HUMAN GATE</b>"}
-    C["🛠 Develop<br/><i>build multiple options</i><br/><b>AI autonomy: HIGH</b>"]
-    D{"◆ Deliver<br/><i>select · verify · ship</i><br/><b>HUMAN GATE</b>"}
+    A["Discover<br/><i>explore the problem space</i><br/><b>AI autonomy: HIGH</b>"]
+    B{"Define<br/><i>fix the problem statement</i><br/><b>HUMAN GATE</b>"}
+    C["Develop<br/><i>build multiple options</i><br/><b>AI autonomy: HIGH</b>"]
+    D{"Deliver<br/><i>select, verify, ship</i><br/><b>HUMAN GATE</b>"}
     A --> B --> C --> D
-    D -. "evidence overturns the definition?<br/>rewind — in the open" .-> B
+    D -. "evidence overturns the definition?<br/>rewind in the open" .-> B
     style B fill:#f9a825,color:#000
     style D fill:#f9a825,color:#000
 ```
 
-| Phase | Mode | AI autonomy | The human… |
+| Phase | Mode | AI autonomy | The human |
 |---|---|---|---|
-| **Discover** | diverge | 🟢 high | sets scope, steers |
-| **Define** ◆ | converge | 🔴 low | **chooses the problem statement** |
-| **Develop** | diverge | 🟢 high | prunes options mid-flight |
-| **Deliver** ◆ | converge | 🟡 medium | **selects, verifies, approves shipping** |
+| Discover | diverge | high | sets scope, steers |
+| Define (gate) | converge | low | chooses the problem statement |
+| Develop | diverge | high | prunes options mid-flight |
+| Deliver (gate) | converge | medium | selects, verifies, approves shipping |
 
 Three rules do most of the work:
 
-1. **Gates are hard.** The agent may not pass Define or Deliver without explicit
-   human approval — and it doesn't pre-work the next phase while waiting.
-2. **Each phase has explicit "must NOT do" rules.** No solutions during Discover
-   (premature convergence), no silently editing the problem statement during
-   Develop, no "predicted user feedback" during Deliver.
-3. **Rewinding is public.** New evidence can overturn an earlier conclusion,
-   but the agent reports *what flipped and why* — it never quietly patches history.
+1. **Gates are hard.** The agent may not leave Define or Deliver without explicit human approval, and it does not pre-work the next phase while waiting.
+2. **Each phase lists what the agent must not do.** No solutions during Discover (premature convergence), no silent edits to the problem statement during Develop, no "predicted user feedback" during Deliver.
+3. **Rewinding is public.** New evidence can overturn an earlier conclusion, but the agent reports what flipped and why. It never quietly patches history.
 
-The full rules live in **[PROCESS.md](PROCESS.md)** (English) /
-**[PROCESS.ko.md](PROCESS.ko.md)** (한국어). It applies equally well to software,
-papers, and competition entries — the phases map 1:1 onto
-*background → problem setup → method → evaluation*.
+Why gates instead of an instruction such as "be careful about the problem"? Soft instructions fade over a long session. A gate is a state the agent is in, with an exit condition the human controls. It survives for the same reason CI gates work better than "remember to run the tests".
+
+The full rules are in [PROCESS.md](PROCESS.md) (English) and [PROCESS.ko.md](PROCESS.ko.md) (Korean).
 
 ## Usage
 
-The prompt is plain markdown — no tooling, no dependencies. Wire it into
-whatever harness you use:
+The prompt is plain Markdown. There is nothing to install and no dependency.
 
 ### Claude Code
 
-Reference it from your project's `CLAUDE.md`:
+Reference it from the project's `CLAUDE.md`:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/sangwonkim98/double-diamond-harness/main/PROCESS.md \
@@ -78,7 +63,7 @@ never finalize a problem definition (Define) or select/ship a final option
 EOF
 ```
 
-Or install it as a skill so you can invoke it with `/double-diamond`:
+Or install it as a skill and call it with `/double-diamond`:
 
 ```bash
 mkdir -p .claude/skills/double-diamond
@@ -86,52 +71,43 @@ curl -fsSL https://raw.githubusercontent.com/sangwonkim98/double-diamond-harness
   -o .claude/skills/double-diamond/SKILL.md
 ```
 
-See [examples/CLAUDE.md](examples/CLAUDE.md) for a complete project file.
+[examples/CLAUDE.md](examples/CLAUDE.md) is a complete project file that restates the gates.
 
-### Cursor / Windsurf / other rule-file harnesses
+### Cursor, Windsurf and other rule-file harnesses
 
-Same idea — drop `PROCESS.md` in the repo and reference it from `.cursorrules`,
-`.windsurfrules`, or the equivalent.
+Put `PROCESS.md` in the repository and reference it from `.cursorrules`, `.windsurfrules` or the equivalent file.
 
-### Raw API / custom agents
+### Raw API or custom agents
 
-Append `PROCESS.md` to your system prompt, and enforce the two gates in your
-agent loop (e.g., a `request_human_approval` tool the agent must call to leave
-Define and Deliver).
+Append `PROCESS.md` to the system prompt and enforce the two gates in the agent loop, for example with a `request_human_approval` tool the agent must call to leave Define and Deliver.
 
-### Working the loop
-
-A typical session then looks like:
+### A typical session
 
 ```
 you:   We need a submission for the K-AI award. Start with Discover.
-agent: [researches past winners, judging criteria, related work…]
-       Exploration summary: 3 patterns, 2 tensions, 4 open questions. → your call on scope
+agent: [researches past winners, judging criteria, related work...]
+       Exploration summary: 3 patterns, 2 tensions, 4 open questions. Your call on scope.
 you:   Go to Define.
-agent: 5 candidate problem statements, trade-off table, my recommendation is #2 because…
-       ◆ Waiting at the Define gate: pick a statement, success criteria, and non-goals.
+agent: 5 candidate problem statements, trade-off table, my recommendation is #2 because...
+       Waiting at the Define gate: pick a statement, success criteria, and non-goals.
 you:   #2, success = live demo passes X, non-goal = mobile.
-agent: [builds 3 prototypes, self-scores each against your criteria…]
-       ◆ Waiting at the Deliver gate: comparison table attached, risks listed.
+agent: [builds 3 prototypes, self-scores each against your criteria...]
+       Waiting at the Deliver gate: comparison table attached, risks listed.
 ```
-
-## Why gates instead of "just prompt it to be careful"?
-
-Soft instructions ("be thoughtful about the problem") degrade over a long
-session. Structural rules survive: a gate is a *state* the agent is in, with an
-explicit exit condition the human controls. The same reason CI gates beat
-"remember to run the tests."
 
 ## Layout
 
-```
-├── PROCESS.md      # the prompt (English) — this is the artifact
-├── PROCESS.ko.md   # the prompt (Korean original)
-├── examples/
-│   └── CLAUDE.md   # example Claude Code project integration
-└── LICENSE         # MIT
-```
+| Path | What it holds |
+|---|---|
+| `PROCESS.md` | The prompt in English. This is the artifact. |
+| `PROCESS.ko.md` | The prompt in Korean (the original). |
+| `examples/CLAUDE.md` | Example Claude Code project file that wires in the process. |
+| `LICENSE` | MIT. |
+
+## Related
+
+- Project list on the owner's site: https://sangwon.sw-kim.com/projects/
 
 ## License
 
-[MIT](LICENSE) — use it, fork it, rewrite the phases for your own process.
+[MIT](LICENSE). Use it, fork it, rewrite the phases for your own process.
